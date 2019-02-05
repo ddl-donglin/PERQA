@@ -1,24 +1,24 @@
-import os
-import subprocess
 import json
 import pickle
 import PERQAInstance
+from bert.extract_features import my_get_features
 
 json_path = '/home/david/PycharmProjects/PERQA/data/zh_session_ano.json'
 
 
-def gen_bert_features(input_path, output_path):
-    cmd1 = 'source /root/conda activate tensorflow'
-    cmd2 = 'BERT_BASE_DIR=' + '/home/david/PycharmProjects/PERQA/encoding/bert/chinese_L-12_H-768_A-12'
-    cmd3 = 'python /home/david/PycharmProjects/PERQA/encoding/bert/extract_features.py ' \
-           ' --input_file=' + input_path + \
-           ' --output_file=' + output_path + \
-           ' --vocab_file=$BERT_BASE_DIR/vocab.txt' \
-           ' --bert_config_file=$BERT_BASE_DIR/bert_config.json' \
-           ' --init_checkpoint=$BERT_BASE_DIR/bert_model.ckpt' \
-           ' --layers=-1,-2,-3,-4   --max_seq_length=128   --batch_size=8'
-    subprocess.run("bash -c " + cmd1 + ' , shell=True')
+def gen_bert_features(input_str):
+    # cmd1 = 'source /root/conda activate tensorflow'
+    # cmd2 = 'BERT_BASE_DIR=' + '/home/david/PycharmProjects/PERQA/encoding/bert/chinese_L-12_H-768_A-12'
+    # cmd3 = 'python /home/david/PycharmProjects/PERQA/encoding/bert/extract_features.py ' \
+    #        ' --input_file=' + input_path + \
+    #        ' --output_file=' + output_path + \
+    #        ' --vocab_file=$BERT_BASE_DIR/vocab.txt' \
+    #        ' --bert_config_file=$BERT_BASE_DIR/bert_config.json' \
+    #        ' --init_checkpoint=$BERT_BASE_DIR/bert_model.ckpt' \
+    #        ' --layers=-1,-2,-3,-4   --max_seq_length=128   --batch_size=8'
+    # subprocess.run("bash -c " + cmd1 + ' , shell=True')
     # os.system(cmd1 + ' && ' + cmd2 + ' && ' + cmd3)
+    return my_get_features(input_str)
 
 
 def gen_glove_features(input_path, output_path):
@@ -89,4 +89,5 @@ def gen_all_instances(json_path, feature_type):
 
 
 if __name__ == '__main__':
-    gen_bert_features('test_in.txt', 'test_out.json')
+    # gen_bert_features('test_in.txt', 'test_out.json')
+    print(gen_bert_features('啊啊啊'))

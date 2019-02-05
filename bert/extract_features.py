@@ -23,8 +23,10 @@ import collections
 import json
 import re
 
-import modeling
-import tokenization
+from bert import modeling
+from bert import tokenization
+# import modeling
+# import tokenization
 import tensorflow as tf
 
 flags = tf.flags
@@ -340,6 +342,104 @@ def read_examples(input_file):
     return examples
 
 
+def my_get_features(input_str):
+
+    root_path = '/home/david/PycharmProjects/PERQA/bert/chinese_L-12_H-768_A-12/'
+    tmp_in_file = 'tmp_in.txt'
+    output_file = 'tmp_out.txt'
+    max_seq_length = 128
+    vocab_file = root_path + 'vocab.txt'
+    do_lower_case = True
+    bert_config_file = root_path + 'bert_config.json'
+    init_checkpoint = root_path + 'bert_model.ckpt'
+    layers = "-1,-2,-3,-4"
+    use_tpu = False
+    use_one_hot_embeddings = False
+    batch_size = 32
+    master = None
+    num_tpu_cores = 8
+
+    # save to txt file
+    with open(tmp_in_file, 'w+') as in_f:
+        in_f.write(input_str)
+
+    # get str eg
+    examples = read_examples(tmp_in_file)
+
+    # get tokenizer
+    tokenizer = tokenization.FullTokenizer(
+        vocab_file=vocab_file, do_lower_case=do_lower_case)
+
+    # get features
+    features = convert_examples_to_features(
+        examples=examples, seq_length=max_seq_length, tokenizer=tokenizer)
+
+    # get bert config
+    bert_config = modeling.BertConfig.from_json_file(bert_config_file)
+
+    unique_id_to_feature = {}
+    for feature in features:
+        unique_id_to_feature[feature.unique_id] = feature
+
+    # layer indexes
+    layer_indexes = [int(x) for x in layers.split(",")]
+
+    # run_config
+    is_per_host = tf.contrib.tpu.InputPipelineConfig.PER_HOST_V2
+    run_config = tf.contrib.tpu.RunConfig(
+        master=master,
+        tpu_config=tf.contrib.tpu.TPUConfig(
+            num_shards=num_tpu_cores,
+            per_host_input_for_training=is_per_host))
+
+    model_fn = model_fn_builder(
+        bert_config=bert_config,
+        init_checkpoint=init_checkpoint,
+        layer_indexes=layer_indexes,
+        use_tpu=use_tpu,
+        use_one_hot_embeddings=use_one_hot_embeddings)
+
+    # If TPU is not available, this will fall back to normal Estimator on CPU or GPU.
+    estimator = tf.contrib.tpu.TPUEstimator(
+        use_tpu=use_tpu,
+        model_fn=model_fn,
+        config=run_config,
+        predict_batch_size=batch_size)
+
+    input_fn = input_fn_builder(
+        features=features, seq_length=max_seq_length)
+
+    all_values = []
+    with codecs.getwriter("utf-8")(tf.gfile.Open(output_file,
+                                                 "w")) as writer:
+        for result in estimator.predict(input_fn, yield_single_examples=True):
+            unique_id = int(result["unique_id"])
+            feature = unique_id_to_feature[unique_id]
+            output_json = collections.OrderedDict()
+            output_json["linex_index"] = unique_id
+            all_features = []
+
+            for (i, token) in enumerate(feature.tokens):
+                all_layers = []
+                for (j, layer_index) in enumerate(layer_indexes):
+                    layer_output = result["layer_output_%d" % j]
+                    layers = collections.OrderedDict()
+                    layers["index"] = layer_index
+                    layers["values"] = [
+                        round(float(x), 6) for x in layer_output[i:(i + 1)].flat
+                    ]
+                    all_values.append(layers["values"])
+                    all_layers.append(layers)
+                features = collections.OrderedDict()
+                features["token"] = token
+                features["layers"] = all_layers
+                all_features.append(features)
+            output_json["features"] = all_features
+            writer.write(json.dumps(output_json) + "\n")
+    res_features = sum(all_values, [])
+    return res_features
+
+
 def main(_):
     tf.logging.set_verbosity(tf.logging.INFO)
 
@@ -415,9 +515,12 @@ def main(_):
 
 
 if __name__ == "__main__":
-    flags.mark_flag_as_required("input_file")
-    flags.mark_flag_as_required("vocab_file")
-    flags.mark_flag_as_required("bert_config_file")
-    flags.mark_flag_as_required("init_checkpoint")
-    flags.mark_flag_as_required("output_file")
-    tf.app.run()
+    # flags.mark_flag_as_required("input_file")
+    # flags.mark_flag_as_required("vocab_file")
+    # flags.mark_flag_as_required("bert_config_file")
+    # flags.mark_flag_as_required("init_checkpoint")
+    # flags.mark_flag_as_required("output_file")
+    # tf.app.run()
+    a = my_get_features('啊')
+    print(a)
+    print(len(a))
