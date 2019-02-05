@@ -3,7 +3,7 @@ import pickle
 import PERQAInstance
 from bert.extract_features import my_get_features
 
-json_path = '/home/david/PycharmProjects/PERQA/data/zh_session_ano.json'
+root_path = '/home/david/PycharmProjects/PERQA/data/'
 
 
 def gen_bert_features(input_str):
@@ -36,9 +36,9 @@ def gen_elmo_features(input_path, output_path):
     return features
 
 
-def gen_all_instances(json_path, feature_type):
+def gen_all_instances(json_path=root_path + 'zh_session_ano.json', feature_type='bert'):
     """
-    feature_type: GloVe, CoVE, ELMo
+    feature_type: bert, GloVe, CoVE, ELMo
     :param json_path:
     :param feature_type:
     :return:
@@ -48,7 +48,8 @@ def gen_all_instances(json_path, feature_type):
     for each_name in json_data.keys():
         all_num = len(json_data[each_name])
         idx = 0
-        perqa_ins_list = []
+        # perqa_ins_list = []
+        each_name_perqa_ins_f = open(each_name + '.pkl', 'wb+')
 
         for each_case in json_data[each_name]:
             session = each_case['session']
@@ -57,37 +58,87 @@ def gen_all_instances(json_path, feature_type):
             idx += 1
             print(each_name, all_num, idx, raw_id)
 
-            with open('tmp_sess.txt', 'w+') as sess_f:
-                for each_line in session:
-                    sess_f.write(each_line)
+            # generate bert sess features
+            sess_features = []
+            for each_line in session:
+                if feature_type == 'bert':
+                    sess_features.append(gen_bert_features(each_line))
 
             qas_f = []
             for each_qa in qas:
                 un = each_qa['un']
-                with open('tmp_q.txt', 'w+') as q_f:
-                    q_f.write(each_qa['q'])
-                with open('tmp_a.txt', 'w+') as a_f:
-                    a_f.write(each_qa['a'])
+                q_str = each_qa['q']
+                a_str = each_qa['a']
 
-                # generate bert qa features (list)
+                # generate bert qa features
+                q_features = gen_bert_features(q_str)
+                a_features = gen_bert_features(a_str)
 
-            # generate bert sess features
+                qas_f.append((un, q_features, a_features))
 
             # generate PERQAInstance
             perqa_ins = PERQAInstance.PERQAInstance(
                 name=each_name,
                 session=session,
                 raw_id=raw_id,
-                session_f=sess_f,
+                session_f=sess_features,
                 qas_f=qas_f
             )
 
-            perqa_ins_list.append(perqa_ins)
+            # perqa_ins_list.append(perqa_ins)
+            pickle.dump(perqa_ins, each_name_perqa_ins_f)
 
-        with open(each_name+'.pkl', 'wb+') as perqa_f:
-            pickle.dump(perqa_ins_list, perqa_f)
+        # with open(each_name + '.pkl', 'wb+') as perqa_f:
+        #     pickle.dump(perqa_ins_list, perqa_f)
+
+
+def load_instances(ins_path):
+    with open(ins_path, 'rb') as load_f:
+        # print("Loading instances list...")
+        return pickle.load(load_f)
 
 
 if __name__ == '__main__':
-    # gen_bert_features('test_in.txt', 'test_out.json')
-    print(gen_bert_features('啊啊啊'))
+    # gen_all_instances(json_path=root_path + 'test.json')
+    # for each_ins in load_instances('xfduan.pkl'):
+    #     print(each_ins.name)
+    #     print(each_ins.session)
+    #     print(each_ins.raw_id)
+    #     print("session_f: ")
+    #     for each_f in each_ins.session_f:
+    #         print(len(each_f))
+    #     print("qas_f: ")
+    #     for each_f in each_ins.qas_f:
+    #         print(each_f[0], len(each_f))
+
+    """
+    xfduan
+    ['总觉得自己去菜场买菜很有画面感啊！', '啊…上次心血来潮去卖暖贴 卖的好惨好惨啊 lz咋卖？', '啊？我咋卖？我不卖东西诶 我是去买东西哦', '那 你买东西的时候有木有挎着框', '哈哈哈哈 没有诶', '那就太没画面感了…']
+    1
+    session_f: 
+    58368
+    76800
+    64512
+    49152
+    27648
+    33792
+    qas_f: 
+    5 3
+    6 3
+    xfduan
+    ['mlgb刚才脚板抽筋怎么算。', '缺钙？', '喝蓝瓶娃哈哈。', '买几片钙片吃吃', '有用吗！', '试试吧 反正不贵 吃了没坏处']
+    2
+    session_f: 
+    43008
+    15360
+    27648
+    27648
+    18432
+    43008
+    qas_f: 
+    3 3
+    5 3
+    6 3
+    """
+
+    gen_all_instances()

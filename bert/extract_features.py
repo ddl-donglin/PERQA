@@ -22,12 +22,13 @@ import codecs
 import collections
 import json
 import re
+import os
 
 from bert import modeling
 from bert import tokenization
-# import modeling
-# import tokenization
 import tensorflow as tf
+
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = "3"
 
 flags = tf.flags
 
@@ -343,7 +344,6 @@ def read_examples(input_file):
 
 
 def my_get_features(input_str):
-
     root_path = '/home/david/PycharmProjects/PERQA/bert/chinese_L-12_H-768_A-12/'
     tmp_in_file = 'tmp_in.txt'
     output_file = 'tmp_out.txt'
