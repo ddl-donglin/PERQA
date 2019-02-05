@@ -21,7 +21,28 @@ def gen_bert_features(input_path, output_path):
     # os.system(cmd1 + ' && ' + cmd2 + ' && ' + cmd3)
 
 
-def gen_all_instances(json_path):
+def gen_glove_features(input_path, output_path):
+    features = []
+    return features
+
+
+def gen_cove_features(input_path, output_path):
+    features = []
+    return features
+
+
+def gen_elmo_features(input_path, output_path):
+    features = []
+    return features
+
+
+def gen_all_instances(json_path, feature_type):
+    """
+    feature_type: GloVe, CoVE, ELMo
+    :param json_path:
+    :param feature_type:
+    :return:
+    """
     f = open(json_path, 'r')
     json_data = json.loads(f.read())
     for each_name in json_data.keys():
