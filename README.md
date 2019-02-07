@@ -1,10 +1,10 @@
 ## A Conversational Question Answering on Phrase Ellipsis Recovery
 
 ### Baseline
-flowQA
-coQA
-DrQA
-QuAC
+[flowQA](https://github.com/momohuang/FlowQA)
+[coQA](https://github.com/stanfordnlp/coqa-baselines)
+[DrQA](https://github.com/facebookresearch/DrQA)
+[QuAC](http://quac.ai/) (dataset)
 
 
 ### Encoding
@@ -21,7 +21,8 @@ modified glove for Chinese. [glove-tools](https://github.com/Daviddddl/glove-too
 
 
 #### CoVE
-
+[cove](https://github.com/salesforce/cove)
 
 #### ELMo
-
+Bidirectional LSTM-CRF and ELMo
+[anago](https://github.com/Hironsan/anago)
