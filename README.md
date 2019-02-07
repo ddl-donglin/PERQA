@@ -2,6 +2,7 @@
 
 ### Baseline
 flowQA
+coQA
 DrQA
 QuAC
 
@@ -16,6 +17,7 @@ usage:
 
 
 #### GloVe
+modified glove for Chinese. [glove-tools](https://github.com/Daviddddl/glove-tools)
 
 
 #### CoVE
