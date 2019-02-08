@@ -1,18 +1,11 @@
 ## A Conversational Question Answering on Phrase Ellipsis Recovery
 
 ### Baseline
-Base projects:
-[flowQA](https://github.com/momohuang/FlowQA)
-[coQA](https://github.com/stanfordnlp/coqa-baselines)
-[DrQA](https://github.com/facebookresearch/DrQA)
-[QuAC](http://quac.ai/) (dataset)
+|Base projects|[flowQA](https://github.com/momohuang/FlowQA)|[coQA](https://github.com/stanfordnlp/coqa-baselines)|[DrQA](https://github.com/facebookresearch/DrQA)|[QuAC](http://quac.ai/) (dataset)|
+|---|---|---|---|---|
 
-Modified projects:
-[flowQA_4_PERQA](https://github.com/Daviddddl/FlowQA)
-[coQA_4_PERQA](https://github.com/Daviddddl/FlowQA/blob/master/QA_model/model_CoQA.py)
-[QuAC_4_PERQA](https://github.com/Daviddddl/FlowQA/blob/master/QA_model/model_QuAC.py)
-[DrQA_4_PERQA](https://github.com/Daviddddl/DrQA)
-
+|Modified projects|[flowQA_4_PERQA](https://github.com/Daviddddl/FlowQA)|[coQA_4_PERQA](https://github.com/Daviddddl/FlowQA/blob/master/QA_model/model_CoQA.py)|[QuAC_4_PERQA](https://github.com/Daviddddl/FlowQA/blob/master/QA_model/model_QuAC.py)|[DrQA_4_PERQA](https://github.com/Daviddddl/DrQA)|
+|---|---|---|---|---|
 
 ### Data
 
@@ -24,11 +17,9 @@ Download the PERQA dataset: [PERQA](https://drive.google.com/open?id=1_KP3YOeCrp
 Tensorflow1.8 + CUDA9.0 + python3.6 + Tensor2tensor
 
   
-  download and install Anaconda 
-  https://www.anaconda.com/download/#linux
+Download and install [Anaconda](https://www.anaconda.com/download/#linux) 
   
-  for more install details: 
-  https://blog.csdn.net/Davidddl/article/details/81873606
+You can find more install details about this on my [blog](https://blog.csdn.net/Davidddl/article/details/81873606).
   
 ```
 sudo bash Anaconda3-5.2.0-Linux-x86_64.sh
@@ -57,7 +48,7 @@ python prepare.py
 ```
 ##### Download extracted bert features of [PERQA](https://drive.google.com/open?id=1_KP3YOeCrpwuV8Qecq2RXyBvPkwso-7-)
 [PERQA_p1](https://drive.google.com/open?id=1yP0mbo2DI7X-CujPpAJ_TWnxM6niOqBY)
-[PERQA_p2](https://drive.google.com/open?id=1yP0mbo2DI7X-CujPpAJ_TWnxM6niOqBY)
+[PERQA_p2](https://drive.google.com/open?id=1vWHyzxIZm5lYtg4iThpTsqoJ4498NhxY)
 
 
 #### GloVe
