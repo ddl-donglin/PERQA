@@ -47,20 +47,22 @@ pip install -r requirements.txt
 python prepare.py
 ```
 ##### Download extracted bert features of [PERQA](https://drive.google.com/open?id=1_KP3YOeCrpwuV8Qecq2RXyBvPkwso-7-)
-[PERQA_p1](https://drive.google.com/open?id=1yP0mbo2DI7X-CujPpAJ_TWnxM6niOqBY)
-[PERQA_p2](https://drive.google.com/open?id=1vWHyzxIZm5lYtg4iThpTsqoJ4498NhxY)
+|[PERQA_p1](https://drive.google.com/open?id=1yP0mbo2DI7X-CujPpAJ_TWnxM6niOqBY)|[PERQA_p2](https://drive.google.com/open?id=1vWHyzxIZm5lYtg4iThpTsqoJ4498NhxY)|
+|---|---|
 
 
 #### GloVe
-modified glove for Chinese. [glove-tools](https://github.com/Daviddddl/glove-tools)
-If you want to extract your own proposal data, you could find more details from the modified [glove-tools](https://github.com/Daviddddl/glove-tools)
+You could find our modified glove for Chinese. [glove-tools](https://github.com/Daviddddl/glove-tools)
+
+If you want to extract your own proposal data, you could find more details from [glove-tools](https://github.com/Daviddddl/glove-tools)
+
 Due to lack of support for Chinese in [basic projects](https://github.com/maciejkula/glove-python), we adopted [LTP](https://github.com/HIT-SCIR/ltp), [LTP_py](https://github.com/HIT-SCIR/pyltp)
-You will find the usage in [glove-tools](https://github.com/Daviddddl/glove-tools)
+
 
 #### CoVE
-[cove](https://github.com/salesforce/cove)
+
+CoVE project: [cove](https://github.com/salesforce/cove)
 
 
 #### ELMo
-Bidirectional LSTM-CRF and ELMo
-[anago](https://github.com/Hironsan/anago)
+Bidirectional LSTM-CRF and ELMo project: [anago](https://github.com/Hironsan/anago)
