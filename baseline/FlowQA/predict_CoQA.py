@@ -49,7 +49,7 @@ if args.model[-3:] != '.pt':
 os.makedirs(args.output_dir, exist_ok=True)
 # count the number of prediction files
 if args.number == -1:
-    args.number = len(os.listdir(args.output_dir))+1
+    args.number = len(os.listdir(args.output_dir)) + 1
 args.output = args.output_dir + 'pred' + str(args.number) + '.pckl'
 
 random.seed(args.seed)
@@ -66,6 +66,7 @@ formatter = logging.Formatter(fmt='%(asctime)s %(message)s', datefmt='%m/%d/%Y %
 ch.setFormatter(formatter)
 log.addHandler(ch)
 
+
 def main():
     log.info('[program starts.]')
     checkpoint = torch.load(args.model)
@@ -79,7 +80,7 @@ def main():
     log.info('[model loaded.]')
 
     test, test_embedding = load_dev_data(opt)
-    model = QAModel(opt, state_dict = state_dict)
+    model = QAModel(opt, state_dict=state_dict)
     CoQAEval = CoQAEvaluator("CoQA/dev.json")
     log.info('[Data loaded.]')
 
@@ -88,7 +89,8 @@ def main():
     if args.cuda:
         model.cuda()
 
-    batches = BatchGen_CoQA(test, batch_size=args.batch_size, evaluation=True, gpu=args.cuda, dialog_ctx=opt['explicit_dialog_ctx'], precompute_elmo=16 // args.batch_size)
+    batches = BatchGen_CoQA(test, batch_size=args.batch_size, evaluation=True, gpu=args.cuda,
+                            dialog_ctx=opt['explicit_dialog_ctx'], precompute_elmo=16 // args.batch_size)
     sample_idx = random.sample(range(len(batches)), args.show)
 
     with open("CoQA/dev.json", "r", encoding="utf8") as f:
@@ -117,20 +119,21 @@ def main():
             print("---")
         print("")
 
-    assert(len(list_of_ids) == len(predictions))
+    assert (len(list_of_ids) == len(predictions))
     official_predictions = []
     for ids, pred in zip(list_of_ids, predictions):
         official_predictions.append({
-         "id": ids[0],
-         "turn_id": ids[1],
-         "answer": pred})
+            "id": ids[0],
+            "turn_id": ids[1],
+            "answer": pred})
     with open("model_prediction.json", "w", encoding="utf8") as f:
         json.dump(official_predictions, f)
 
     f1 = CoQAEval.compute_turn_score_seq(predictions)
     log.warning("Test F1: {:.3f}".format(f1 * 100.0))
 
-def load_dev_data(opt): # can be extended to true test set
+
+def load_dev_data(opt):  # can be extended to true test set
     with open(os.path.join(args.dev_dir, 'dev_meta.msgpack'), 'rb') as f:
         meta = msgpack.load(f, encoding='utf8')
     embedding = torch.Tensor(meta['embedding'])
@@ -142,28 +145,29 @@ def load_dev_data(opt): # can be extended to true test set
     assert opt['num_features'] == len(data['context_features'][0][0]) + opt['explicit_dialog_ctx'] * 3
 
     dev = {'context': list(zip(
-                        data['context_ids'],
-                        data['context_tags'],
-                        data['context_ents'],
-                        data['context'],
-                        data['context_span'],
-                        data['1st_question'],
-                        data['context_tokenized'])),
-           'qa': list(zip(
-                        data['question_CID'],
-                        data['question_ids'],
-                        data['context_features'],
-                        data['answer_start'],
-                        data['answer_end'],
-                        data['rationale_start'],
-                        data['rationale_end'],
-                        data['answer_choice'],
-                        data['question'],
-                        data['answer'],
-                        data['question_tokenized']))
-          }
+        data['context_ids'],
+        data['context_tags'],
+        data['context_ents'],
+        data['context'],
+        data['context_span'],
+        data['1st_question'],
+        data['context_tokenized'])),
+        'qa': list(zip(
+            data['question_CID'],
+            data['question_ids'],
+            data['context_features'],
+            data['answer_start'],
+            data['answer_end'],
+            data['rationale_start'],
+            data['rationale_end'],
+            data['answer_choice'],
+            data['question'],
+            data['answer'],
+            data['question_tokenized']))
+    }
 
     return dev, embedding
+
 
 if __name__ == '__main__':
     main()

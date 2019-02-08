@@ -11,7 +11,8 @@ import multiprocessing
 import logging
 import random
 from allennlp.modules.elmo import batch_to_ids
-from general_utils import flatten_json, normalize_text, build_embedding, load_glove_vocab, pre_proc, get_context_span, find_answer_span, feature_gen, token2id
+from general_utils import flatten_json, normalize_text, build_embedding, load_glove_vocab, pre_proc, get_context_span, \
+    find_answer_span, feature_gen, token2id
 
 parser = argparse.ArgumentParser(
     description='Preprocessing train + dev files, about 20 minutes to run on Servers.'
@@ -30,7 +31,6 @@ parser.add_argument('--no_match', action='store_true',
 parser.add_argument('--seed', type=int, default=1023,
                     help='random seed for data shuffling, embedding init, etc.')
 
-
 args = parser.parse_args()
 trn_file = 'QuAC_data/train.json'
 dev_file = 'QuAC_data/dev.json'
@@ -47,46 +47,48 @@ log = logging.getLogger(__name__)
 
 log.info('start data preparing... (using {} threads)'.format(args.threads))
 
-glove_vocab = load_glove_vocab(wv_file, wv_dim) # return a "set" of vocabulary
+glove_vocab = load_glove_vocab(wv_file, wv_dim)  # return a "set" of vocabulary
 log.info('glove loaded.')
 
-#===============================================================
-#=================== Work on training data =====================
-#===============================================================
+
+# ===============================================================
+# =================== Work on training data =====================
+# ===============================================================
 
 def proc_train(ith, article):
     rows = []
-    
+
     for paragraph in article['paragraphs']:
         context = paragraph['context']
         for qa in paragraph['qas']:
             question = qa['question']
             answers = qa['orig_answer']
-            
+
             answer = answers['text']
             answer_start = answers['answer_start']
             answer_end = answers['answer_start'] + len(answers['text'])
-            answer_choice = 0 if answer == 'CANNOTANSWER' else\
-                            1 if qa['yesno'] == 'y' else\
-                            2 if qa['yesno'] == 'n' else\
-                            3 # Not a yes/no question
+            answer_choice = 0 if answer == 'CANNOTANSWER' else \
+                1 if qa['yesno'] == 'y' else \
+                    2 if qa['yesno'] == 'n' else \
+                        3  # Not a yes/no question
             if answer_choice != 0:
                 """
                 0: Do not ask a follow up question!
                 1: Definitely ask a follow up question!
                 2: Not too important, but you can ask a follow up.
                 """
-                answer_choice += 10 * (0 if qa['followup'] == "n" else\
-                                       1 if qa['followup'] == "y" else\
-                                       2)
+                answer_choice += 10 * (0 if qa['followup'] == "n" else \
+                                           1 if qa['followup'] == "y" else \
+                                               2)
             else:
                 answer_start, answer_end = -1, -1
             rows.append((ith, question, answer, answer_start, answer_end, answer_choice))
     return rows, context
 
+
 train, train_context = flatten_json(trn_file, proc_train)
 train = pd.DataFrame(train, columns=['context_idx', 'question', 'answer',
-                                    'answer_start', 'answer_end', 'answer_choice'])
+                                     'answer_start', 'answer_end', 'answer_choice'])
 log.info('train json data flattened.')
 
 print(train)
@@ -112,7 +114,7 @@ for ans_st, ans_end, idx in zip(train.answer_start, train.answer_end, train.cont
 
 train['answer_start_token'], train['answer_end_token'] = ans_st_token_ls, ans_end_token_ls
 initial_len = len(train)
-train.dropna(inplace=True) # modify self DataFrame
+train.dropna(inplace=True)  # modify self DataFrame
 log.info('drop {0}/{1} inconsistent samples.'.format(initial_len - len(train), initial_len))
 log.info('answer span for training is generated.')
 
@@ -120,7 +122,8 @@ log.info('answer span for training is generated.')
 trC_tags, trC_ents, trC_features = feature_gen(trC_docs, train.context_idx, trQ_docs, args.no_match)
 log.info('features for training is generated: {}, {}, {}'.format(len(trC_tags), len(trC_ents), len(trC_features)))
 
-def build_train_vocab(questions, contexts): # vocabulary will also be sorted accordingly
+
+def build_train_vocab(questions, contexts):  # vocabulary will also be sorted accordingly
     if args.sort_all:
         counter = collections.Counter(w for doc in questions + contexts for w in doc)
         vocab = sorted([t for t in counter if t in glove_vocab], key=counter.get, reverse=True)
@@ -140,6 +143,7 @@ def build_train_vocab(questions, contexts): # vocabulary will also be sorted acc
     vocab.insert(2, "<S>")
     vocab.insert(3, "</S>")
     return vocab
+
 
 # vocab
 tr_vocab = build_train_vocab(trQ_tokens, trC_tokens)
@@ -163,7 +167,7 @@ tr_embedding = build_embedding(wv_file, tr_vocab, wv_dim)
 log.info('got embedding matrix for training.')
 
 # don't store row name in csv
-#train.to_csv('QuAC_data/train.csv', index=False, encoding='utf8')
+# train.to_csv('QuAC_data/train.csv', index=False, encoding='utf8')
 
 meta = {
     'vocab': tr_vocab,
@@ -181,9 +185,9 @@ for i, CID in enumerate(train.context_idx):
 result = {
     'question_ids': trQ_ids,
     'context_ids': trC_ids,
-    'context_features': trC_features, # exact match, tf
-    'context_tags': trC_tag_ids, # POS tagging
-    'context_ents': trC_ent_ids, # Entity recognition
+    'context_features': trC_features,  # exact match, tf
+    'context_tags': trC_tag_ids,  # POS tagging
+    'context_ents': trC_ent_ids,  # Entity recognition
     'context': train_context,
     'context_span': train_context_span,
     '1st_question': first_question,
@@ -201,44 +205,46 @@ with open('QuAC_data/train_data.msgpack', 'wb') as f:
 
 log.info('saved training to disk.')
 
-#==========================================================
-#=================== Work on dev data =====================
-#==========================================================
+
+# ==========================================================
+# =================== Work on dev data =====================
+# ==========================================================
 
 def proc_dev(ith, article):
     rows = []
-    
+
     for paragraph in article['paragraphs']:
         context = paragraph['context']
         for qa in paragraph['qas']:
             question = qa['question']
             answers = qa['orig_answer']
-            
+
             answer = answers['text']
             answer_start = answers['answer_start']
             answer_end = answers['answer_start'] + len(answers['text'])
-            answer_choice = 0 if answer == 'CANNOTANSWER' else\
-                            1 if qa['yesno'] == 'y' else\
-                            2 if qa['yesno'] == 'n' else\
-                            3 # Not a yes/no question
+            answer_choice = 0 if answer == 'CANNOTANSWER' else \
+                1 if qa['yesno'] == 'y' else \
+                    2 if qa['yesno'] == 'n' else \
+                        3  # Not a yes/no question
             if answer_choice != 0:
                 """
                 0: Do not ask a follow up question!
                 1: Definitely ask a follow up question!
                 2: Not too important, but you can ask a follow up.
                 """
-                answer_choice += 10 * (0 if qa['followup'] == "n" else\
-                                       1 if qa['followup'] == "y" else\
-                                       2)
+                answer_choice += 10 * (0 if qa['followup'] == "n" else \
+                                           1 if qa['followup'] == "y" else \
+                                               2)
             else:
                 answer_start, answer_end = -1, -1
-            
+
             ans_ls = []
             for ans in qa['answers']:
                 ans_ls.append(ans['text'])
-            
+
             rows.append((ith, question, answer, answer_start, answer_end, answer_choice, ans_ls))
     return rows, context
+
 
 dev, dev_context = flatten_json(dev_file, proc_dev)
 dev = pd.DataFrame(dev, columns=['context_idx', 'question', 'answer',
@@ -271,7 +277,7 @@ for ans_st, ans_end, idx in zip(dev.answer_start, dev.answer_end, dev.context_id
 
 dev['answer_start_token'], dev['answer_end_token'] = ans_st_token_ls, ans_end_token_ls
 initial_len = len(dev)
-dev.dropna(inplace=True) # modify self DataFrame
+dev.dropna(inplace=True)  # modify self DataFrame
 log.info('drop {0}/{1} inconsistent samples.'.format(initial_len - len(dev), initial_len))
 log.info('answer span for dev is generated.')
 
@@ -279,24 +285,27 @@ log.info('answer span for dev is generated.')
 devC_tags, devC_ents, devC_features = feature_gen(devC_docs, dev.context_idx, devQ_docs, args.no_match)
 log.info('features for dev is generated: {}, {}, {}'.format(len(devC_tags), len(devC_ents), len(devC_features)))
 
-def build_dev_vocab(questions, contexts): # most vocabulary comes from tr_vocab
+
+def build_dev_vocab(questions, contexts):  # most vocabulary comes from tr_vocab
     existing_vocab = set(tr_vocab)
-    new_vocab = list(set([w for doc in questions + contexts for w in doc if w not in existing_vocab and w in glove_vocab]))
+    new_vocab = list(
+        set([w for doc in questions + contexts for w in doc if w not in existing_vocab and w in glove_vocab]))
     vocab = tr_vocab + new_vocab
     log.info('train vocab {0}, total vocab {1}'.format(len(tr_vocab), len(vocab)))
     return vocab
 
+
 # vocab
-dev_vocab = build_dev_vocab(devQ_tokens, devC_tokens) # tr_vocab is a subset of dev_vocab
+dev_vocab = build_dev_vocab(devQ_tokens, devC_tokens)  # tr_vocab is a subset of dev_vocab
 devC_ids = token2id(devC_tokens, dev_vocab, unk_id=1)
 devQ_ids = token2id(devQ_tokens, dev_vocab, unk_id=1)
 devQ_tokens = [["<S>"] + doc + ["</S>"] for doc in devQ_tokens]
 devQ_ids = [[2] + qsent + [3] for qsent in devQ_ids]
 print(devQ_ids[:10])
 # tags
-devC_tag_ids = token2id(devC_tags, vocab_tag) # vocab_tag same as training
+devC_tag_ids = token2id(devC_tags, vocab_tag)  # vocab_tag same as training
 # entities
-devC_ent_ids = token2id(devC_ents, vocab_ent, unk_id=0) # vocab_ent same as training
+devC_ent_ids = token2id(devC_ents, vocab_ent, unk_id=0)  # vocab_ent same as training
 log.info('vocabulary for dev is built.')
 
 dev_embedding = build_embedding(wv_file, dev_vocab, wv_dim)
@@ -304,7 +313,7 @@ dev_embedding = build_embedding(wv_file, dev_vocab, wv_dim)
 log.info('got embedding matrix for dev.')
 
 # don't store row name in csv
-#dev.to_csv('QuAC_data/dev.csv', index=False, encoding='utf8')
+# dev.to_csv('QuAC_data/dev.csv', index=False, encoding='utf8')
 
 meta = {
     'vocab': dev_vocab,
@@ -322,9 +331,9 @@ for i, CID in enumerate(dev.context_idx):
 result = {
     'question_ids': devQ_ids,
     'context_ids': devC_ids,
-    'context_features': devC_features, # exact match, tf
-    'context_tags': devC_tag_ids, # POS tagging
-    'context_ents': devC_ent_ids, # Entity recognition
+    'context_features': devC_features,  # exact match, tf
+    'context_tags': devC_tag_ids,  # POS tagging
+    'context_ents': devC_ent_ids,  # Entity recognition
     'context': dev_context,
     'context_span': dev_context_span,
     '1st_question': first_question,

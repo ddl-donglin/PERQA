@@ -67,7 +67,8 @@ parser.add_argument('-tp', '--tune_partial', type=int, default=1000,
 parser.add_argument('--fix_embeddings', action='store_true',
                     help='if true, `tune_partial` will be ignored.')
 parser.add_argument('--elmo_lambda', type=float, default=0.0)
-parser.add_argument('--no_question_normalize', dest='question_normalize', action='store_false') # when set, do dialog normalize
+parser.add_argument('--no_question_normalize', dest='question_normalize',
+                    action='store_false')  # when set, do dialog normalize
 parser.add_argument('--pretrain', default='')
 
 # model
@@ -81,7 +82,8 @@ parser.add_argument('--final_output_att_hidden', type=int, default=250)
 parser.add_argument('--question_merge', default='linear_self_attn')
 parser.add_argument('--no_ptr_update', dest='do_ptr_update', action='store_false')
 parser.add_argument('--no_ptr_net_indep_attn', dest='ptr_net_indep_attn', action='store_false')
-parser.add_argument('--ptr_net_attn_type', default='Bilinear', help="Attention for answer span output: Bilinear, MLP or Default")
+parser.add_argument('--ptr_net_attn_type', default='Bilinear',
+                    help="Attention for answer span output: Bilinear, MLP or Default")
 
 parser.add_argument('--do_residual_rnn', dest='do_residual_rnn', action='store_true')
 parser.add_argument('--do_residual_everything', dest='do_residual_everything', action='store_true')
@@ -92,7 +94,7 @@ parser.add_argument('--rnn_type', default='lstm',
 parser.add_argument('--concat_rnn', dest='concat_rnn', action='store_true')
 
 parser.add_argument('--hidden_size', type=int, default=125)
-parser.add_argument('--self_attention_opt', type=int, default=1) # 0: no self attention
+parser.add_argument('--self_attention_opt', type=int, default=1)  # 0: no self attention
 
 parser.add_argument('--deep_inter_att_do_similar', type=int, default=0)
 parser.add_argument('--deep_att_hidden_size_per_abstr', type=int, default=250)
@@ -100,12 +102,12 @@ parser.add_argument('--deep_att_hidden_size_per_abstr', type=int, default=250)
 parser.add_argument('--no_elmo', dest='use_elmo', action='store_false')
 parser.add_argument('--no_em', action='store_true')
 
-parser.add_argument('--no_wemb', dest='use_wemb', action='store_false') # word embedding
-parser.add_argument('--CoVe_opt', type=int, default=1) # contexualized embedding option
-parser.add_argument('--no_pos', dest='use_pos', action='store_false') # pos tagging
+parser.add_argument('--no_wemb', dest='use_wemb', action='store_false')  # word embedding
+parser.add_argument('--CoVe_opt', type=int, default=1)  # contexualized embedding option
+parser.add_argument('--no_pos', dest='use_pos', action='store_false')  # pos tagging
 parser.add_argument('--pos_size', type=int, default=51, help='how many kinds of POS tags.')
 parser.add_argument('--pos_dim', type=int, default=12, help='the embedding dimension for POS tags.')
-parser.add_argument('--no_ner', dest='use_ner', action='store_false') # named entity
+parser.add_argument('--no_ner', dest='use_ner', action='store_false')  # named entity
 parser.add_argument('--ner_size', type=int, default=19, help='how many kinds of named entity tags.')
 parser.add_argument('--ner_dim', type=int, default=8, help='the embedding dimension for named entity tags.')
 
@@ -149,12 +151,13 @@ ch.setFormatter(formatter)
 log.addHandler(fh)
 log.addHandler(ch)
 
+
 def main():
     log.info('[program starts.]')
-    opt = vars(args) # changing opt will change args
+    opt = vars(args)  # changing opt will change args
     train, train_embedding, opt = load_train_data(opt)
     dev, dev_embedding, dev_answer = load_dev_data(opt)
-    opt['num_features'] += args.explicit_dialog_ctx * (args.use_dialog_act*3 + 2) # dialog_act + previous answer
+    opt['num_features'] += args.explicit_dialog_ctx * (args.use_dialog_act * 3 + 2)  # dialog_act + previous answer
     if opt['use_elmo'] == False:
         opt['elmo_batch_size'] = 0
     log.info('[Data loaded.]')
@@ -188,7 +191,8 @@ def main():
         model.cuda()
 
     if args.resume:
-        batches = BatchGen_QuAC(dev, batch_size=args.batch_size, evaluation=True, gpu=args.cuda, dialog_ctx=args.explicit_dialog_ctx, use_dialog_act=args.use_dialog_act)
+        batches = BatchGen_QuAC(dev, batch_size=args.batch_size, evaluation=True, gpu=args.cuda,
+                                dialog_ctx=args.explicit_dialog_ctx, use_dialog_act=args.use_dialog_act)
         predictions, no_ans_scores = [], []
         for batch in batches:
             phrases, noans = model.predict(batch)
@@ -203,7 +207,9 @@ def main():
     for epoch in range(epoch_0, epoch_0 + args.epoches):
         log.warning('Epoch {}'.format(epoch))
         # train
-        batches = BatchGen_QuAC(train, batch_size=args.batch_size, gpu=args.cuda, dialog_ctx=args.explicit_dialog_ctx, use_dialog_act=args.use_dialog_act, precompute_elmo=args.elmo_batch_size // args.batch_size)
+        batches = BatchGen_QuAC(train, batch_size=args.batch_size, gpu=args.cuda, dialog_ctx=args.explicit_dialog_ctx,
+                                use_dialog_act=args.use_dialog_act,
+                                precompute_elmo=args.elmo_batch_size // args.batch_size)
         start = datetime.now()
         for i, batch in enumerate(batches):
             model.update(batch)
@@ -211,10 +217,12 @@ def main():
                 log.info('updates[{0:6}] train loss[{1:.5f}] remaining[{2}]'.format(
                     model.updates, model.train_loss.avg,
                     str((datetime.now() - start) / (i + 1) * (len(batches) - i - 1)).split('.')[0]))
-        
+
         # eval
         if epoch % args.eval_per_epoch == 0:
-            batches = BatchGen_QuAC(dev, batch_size=args.batch_size, evaluation=True, gpu=args.cuda, dialog_ctx=args.explicit_dialog_ctx, use_dialog_act=args.use_dialog_act, precompute_elmo=args.elmo_batch_size // args.batch_size)
+            batches = BatchGen_QuAC(dev, batch_size=args.batch_size, evaluation=True, gpu=args.cuda,
+                                    dialog_ctx=args.explicit_dialog_ctx, use_dialog_act=args.use_dialog_act,
+                                    precompute_elmo=args.elmo_batch_size // args.batch_size)
             predictions, no_ans_scores = [], []
             for batch in batches:
                 phrases, noans = model.predict(batch)
@@ -238,13 +246,20 @@ def main():
                          os.path.join(model_dir, 'best_model.pt'))
                 log.info('[new best model saved.]')
 
-        log.warning("Epoch {} - dev F1: {:.3f} NA: {:.3f} TH: {:.3f} (best F1: {:.3f} NA: {:.3f} TH: {:.3f})".format(epoch, f1, na, thresh, best_val_score, best_na, best_thresh))
+        log.warning(
+            "Epoch {} - dev F1: {:.3f} NA: {:.3f} TH: {:.3f} (best F1: {:.3f} NA: {:.3f} TH: {:.3f})".format(epoch, f1,
+                                                                                                             na, thresh,
+                                                                                                             best_val_score,
+                                                                                                             best_na,
+                                                                                                             best_thresh))
+
 
 def lr_decay(optimizer, lr_decay):
     for param_group in optimizer.param_groups:
         param_group['lr'] *= lr_decay
     log.info('[learning rate reduced by {}]'.format(lr_decay))
     return optimizer
+
 
 def load_train_data(opt):
     with open(os.path.join(args.train_dir, 'train_meta.msgpack'), 'rb') as f:
@@ -255,32 +270,33 @@ def load_train_data(opt):
 
     with open(os.path.join(args.train_dir, 'train_data.msgpack'), 'rb') as f:
         data = msgpack.load(f, encoding='utf8')
-    #data_orig = pd.read_csv(os.path.join(args.train_dir, 'train.csv'))
+    # data_orig = pd.read_csv(os.path.join(args.train_dir, 'train.csv'))
 
     opt['num_features'] = len(data['context_features'][0][0])
 
     train = {'context': list(zip(
-                        data['context_ids'],
-                        data['context_tags'],
-                        data['context_ents'],
-                        data['context'],
-                        data['context_span'],
-                        data['1st_question'],
-                        data['context_tokenized'])),
-             'qa': list(zip(
-                        data['question_CID'],
-                        data['question_ids'],
-                        data['context_features'],
-                        data['answer_start'],
-                        data['answer_end'],
-                        data['answer_choice'],
-                        data['question'],
-                        data['answer'],
-                        data['question_tokenized']))
-            }
+        data['context_ids'],
+        data['context_tags'],
+        data['context_ents'],
+        data['context'],
+        data['context_span'],
+        data['1st_question'],
+        data['context_tokenized'])),
+        'qa': list(zip(
+            data['question_CID'],
+            data['question_ids'],
+            data['context_features'],
+            data['answer_start'],
+            data['answer_end'],
+            data['answer_choice'],
+            data['question'],
+            data['answer'],
+            data['question_tokenized']))
+    }
     return train, embedding, opt
 
-def load_dev_data(opt): # can be extended to true test set
+
+def load_dev_data(opt):  # can be extended to true test set
     with open(os.path.join(args.dev_dir, 'dev_meta.msgpack'), 'rb') as f:
         meta = msgpack.load(f, encoding='utf8')
     embedding = torch.Tensor(meta['embedding'])
@@ -288,29 +304,29 @@ def load_dev_data(opt): # can be extended to true test set
 
     with open(os.path.join(args.dev_dir, 'dev_data.msgpack'), 'rb') as f:
         data = msgpack.load(f, encoding='utf8')
-    #data_orig = pd.read_csv(os.path.join(args.dev_dir, 'dev.csv'))
+    # data_orig = pd.read_csv(os.path.join(args.dev_dir, 'dev.csv'))
 
     assert opt['num_features'] == len(data['context_features'][0][0])
 
     dev = {'context': list(zip(
-                        data['context_ids'],
-                        data['context_tags'],
-                        data['context_ents'],
-                        data['context'],
-                        data['context_span'],
-                        data['1st_question'],
-                        data['context_tokenized'])),
-           'qa': list(zip(
-                        data['question_CID'],
-                        data['question_ids'],
-                        data['context_features'],
-                        data['answer_start'],
-                        data['answer_end'],
-                        data['answer_choice'],
-                        data['question'],
-                        data['answer'],
-                        data['question_tokenized']))
-          }
+        data['context_ids'],
+        data['context_tags'],
+        data['context_ents'],
+        data['context'],
+        data['context_span'],
+        data['1st_question'],
+        data['context_tokenized'])),
+        'qa': list(zip(
+            data['question_CID'],
+            data['question_ids'],
+            data['context_features'],
+            data['answer_start'],
+            data['answer_end'],
+            data['answer_choice'],
+            data['question'],
+            data['answer'],
+            data['question_tokenized']))
+    }
 
     dev_answer = []
     for i, CID in enumerate(data['question_CID']):
@@ -319,6 +335,7 @@ def load_dev_data(opt): # can be extended to true test set
         dev_answer[CID].append(data['all_answer'][i])
 
     return dev, embedding, dev_answer
+
 
 if __name__ == '__main__':
     main()

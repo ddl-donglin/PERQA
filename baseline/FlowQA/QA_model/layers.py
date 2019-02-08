@@ -9,17 +9,20 @@ from torch.nn.parameter import Parameter
 from torch.nn.utils.rnn import pad_packed_sequence as unpack
 from torch.nn.utils.rnn import pack_padded_sequence as pack
 
+
 # ------------------------------------------------------------------------------
 # Neural Modules
 # ------------------------------------------------------------------------------
 
-def set_seq_dropout(option): # option = True or False
+def set_seq_dropout(option):  # option = True or False
     global do_seq_dropout
     do_seq_dropout = option
 
-def set_my_dropout_prob(p): # p between 0 to 1
+
+def set_my_dropout_prob(p):  # p between 0 to 1
     global my_dropout_p
     my_dropout_p = p
+
 
 def seq_dropout(x, p=0, training=False):
     """
@@ -27,20 +30,23 @@ def seq_dropout(x, p=0, training=False):
     """
     if training == False or p == 0:
         return x
-    dropout_mask = 1.0 / (1-p) * torch.bernoulli((1-p) * (x.new_zeros(x.size(0), x.size(2)) + 1))
+    dropout_mask = 1.0 / (1 - p) * torch.bernoulli((1 - p) * (x.new_zeros(x.size(0), x.size(2)) + 1))
     return dropout_mask.unsqueeze(1).expand_as(x) * x
+
 
 def dropout(x, p=0, training=False):
     """
     x: (batch * len * input_size) or (any other shape)
     """
-    if do_seq_dropout and len(x.size()) == 3: # if x is (batch * len * input_size)
+    if do_seq_dropout and len(x.size()) == 3:  # if x is (batch * len * input_size)
         return seq_dropout(x, p=p, training=training)
     else:
         return F.dropout(x, p=p, training=training)
 
+
 class StackedBRNN(nn.Module):
-    def __init__(self, input_size, hidden_size, num_layers, rnn_type=nn.LSTM, concat_layers=False, do_residual=False, add_feat=0, dialog_flow=False, bidir=True):
+    def __init__(self, input_size, hidden_size, num_layers, rnn_type=nn.LSTM, concat_layers=False, do_residual=False,
+                 add_feat=0, dialog_flow=False, bidir=True):
         super(StackedBRNN, self).__init__()
         self.num_layers = num_layers
         self.concat_layers = concat_layers
@@ -53,7 +59,7 @@ class StackedBRNN(nn.Module):
             input_size = input_size if i == 0 else (2 * hidden_size + add_feat if i == 1 else 2 * hidden_size)
             if self.dialog_flow == True:
                 input_size += 2 * hidden_size
-            self.rnns.append(rnn_type(input_size, hidden_size,num_layers=1,bidirectional=bidir))
+            self.rnns.append(rnn_type(input_size, hidden_size, num_layers=1, bidirectional=bidir))
 
     def forward(self, x, x_mask=None, return_list=False, additional_x=None, previous_hiddens=None):
         # return_list: return a list for layers of hidden vectors
@@ -73,7 +79,7 @@ class StackedBRNN(nn.Module):
                 rnn_input = dropout(rnn_input, p=my_dropout_p, training=self.training)
             if self.dialog_flow == True:
                 if previous_hiddens is not None:
-                    dialog_memory = previous_hiddens[i-1].transpose(0, 1)
+                    dialog_memory = previous_hiddens[i - 1].transpose(0, 1)
                 else:
                     dialog_memory = rnn_input.new_zeros((rnn_input.size(0), rnn_input.size(1), self.hidden_size * 2))
                 rnn_input = torch.cat((rnn_input, dialog_memory), 2)
@@ -97,6 +103,7 @@ class StackedBRNN(nn.Module):
         else:
             return output
 
+
 def RNN_from_opt(input_size_, hidden_size_, opt, num_layers=-1, concat_rnn=None, add_feat=0, dialog_flow=False):
     RNN_TYPES = {'lstm': nn.LSTM, 'gru': nn.GRU, 'rnn': nn.RNN}
     new_rnn = StackedBRNN(
@@ -113,6 +120,7 @@ def RNN_from_opt(input_size_, hidden_size_, opt, num_layers=-1, concat_rnn=None,
     if (concat_rnn if concat_rnn is not None else opt['concat_rnn']):
         output_size *= num_layers if num_layers > 0 else opt['rnn_layers']
     return new_rnn, output_size
+
 
 class MemoryLasagna_Time(nn.Module):
     def __init__(self, input_size, hidden_size, rnn_type='lstm'):
@@ -137,13 +145,15 @@ class MemoryLasagna_Time(nn.Module):
 
     def get_init(self, sample_tensor):
         global my_dropout_p
-        self.dropout_mask = 1.0 / (1-my_dropout_p) * torch.bernoulli((1-my_dropout_p) * (sample_tensor.new_zeros(sample_tensor.size(0), sample_tensor.size(1), self.input_size) + 1))
+        self.dropout_mask = 1.0 / (1 - my_dropout_p) * torch.bernoulli((1 - my_dropout_p) * (
+                    sample_tensor.new_zeros(sample_tensor.size(0), sample_tensor.size(1), self.input_size) + 1))
 
         h = sample_tensor.new_zeros(sample_tensor.size(0), sample_tensor.size(1), self.hidden_size).float()
         memory = sample_tensor.new_zeros(sample_tensor.size(0) * sample_tensor.size(1), self.hidden_size).float()
         if self.rnn_type == 'lstm':
             memory = (memory, memory)
         return h, memory
+
 
 class MTLSTM(nn.Module):
     def __init__(self, opt, embedding=None, padding_idx=0):
@@ -163,9 +173,10 @@ class MTLSTM(nn.Module):
         self.rnn2 = nn.LSTM(600, 300, num_layers=1, bidirectional=True)
 
         state_dict1 = dict([(name, param.data) if isinstance(param, Parameter) else (name, param)
-                        for name, param in state_dict.items() if '0' in name])
-        state_dict2 = dict([(name.replace('1', '0'), param.data) if isinstance(param, Parameter) else (name.replace('1', '0'), param)
-                        for name, param in state_dict.items() if '1' in name])
+                            for name, param in state_dict.items() if '0' in name])
+        state_dict2 = dict(
+            [(name.replace('1', '0'), param.data) if isinstance(param, Parameter) else (name.replace('1', '0'), param)
+             for name, param in state_dict.items() if '1' in name])
         self.rnn1.load_state_dict(state_dict1)
         self.rnn2.load_state_dict(state_dict2)
 
@@ -184,7 +195,7 @@ class MTLSTM(nn.Module):
         Arguments:
             eval_embed (Float Tensor): Initialize eval_embed to be the specified embedding vectors
         """
-        self.eval_embed = nn.Embedding(eval_embed.size(0), eval_embed.size(1), padding_idx = padding_idx)
+        self.eval_embed = nn.Embedding(eval_embed.size(0), eval_embed.size(1), padding_idx=padding_idx)
         self.eval_embed.weight.data = eval_embed
 
         for p in self.eval_embed.parameters():
@@ -216,19 +227,21 @@ class MTLSTM(nn.Module):
 
         return output1, output2
 
+
 # Attention layers
 class AttentionScore(nn.Module):
     """
     sij = Relu(Wx1)DRelu(Wx2)
     """
-    def __init__(self, input_size, attention_hidden_size, similarity_score = False):
+
+    def __init__(self, input_size, attention_hidden_size, similarity_score=False):
         super(AttentionScore, self).__init__()
         self.linear = nn.Linear(input_size, attention_hidden_size, bias=False)
 
         if similarity_score:
-            self.linear_final = Parameter(torch.ones(1, 1, 1) / (attention_hidden_size ** 0.5), requires_grad = False)
+            self.linear_final = Parameter(torch.ones(1, 1, 1) / (attention_hidden_size ** 0.5), requires_grad=False)
         else:
-            self.linear_final = Parameter(torch.ones(1, 1, attention_hidden_size), requires_grad = True)
+            self.linear_final = Parameter(torch.ones(1, 1, attention_hidden_size), requires_grad=True)
 
     def forward(self, x1, x2):
         """
@@ -252,7 +265,7 @@ class AttentionScore(nn.Module):
 
 
 class GetAttentionHiddens(nn.Module):
-    def __init__(self, input_size, attention_hidden_size, similarity_attention = False):
+    def __init__(self, input_size, attention_hidden_size, similarity_attention=False):
         super(GetAttentionHiddens, self).__init__()
         self.scoring = AttentionScore(input_size, attention_hidden_size, similarity_score=similarity_attention)
 
@@ -277,7 +290,7 @@ class GetAttentionHiddens(nn.Module):
         x2_mask = x2_mask.unsqueeze(1).expand_as(scores)
         scores.data.masked_fill_(x2_mask.data, -float('inf'))
         if drop_diagonal:
-            assert(scores.size(1) == scores.size(2))
+            assert (scores.size(1) == scores.size(2))
             diag_mask = torch.diag(scores.data.new(scores.size(1)).zero_() + 1).byte().unsqueeze(0).expand_as(scores)
             scores.data.masked_fill_(diag_mask, -float('inf'))
 
@@ -291,8 +304,10 @@ class GetAttentionHiddens(nn.Module):
         else:
             return matched_seq
 
+
 class DeepAttention(nn.Module):
-    def __init__(self, opt, abstr_list_cnt, deep_att_hidden_size_per_abstr, do_similarity=False, word_hidden_size=None, do_self_attn=False, dialog_flow=False, no_rnn=False):
+    def __init__(self, opt, abstr_list_cnt, deep_att_hidden_size_per_abstr, do_similarity=False, word_hidden_size=None,
+                 do_self_attn=False, dialog_flow=False, no_rnn=False):
         super(DeepAttention, self).__init__()
 
         self.no_rnn = no_rnn
@@ -303,21 +318,24 @@ class DeepAttention(nn.Module):
         att_size = abstr_hidden_size * abstr_list_cnt + word_hidden_size
 
         self.int_attn_list = nn.ModuleList()
-        for i in range(abstr_list_cnt+1):
-            self.int_attn_list.append(GetAttentionHiddens(att_size, deep_att_hidden_size_per_abstr, similarity_attention=do_similarity))
+        for i in range(abstr_list_cnt + 1):
+            self.int_attn_list.append(
+                GetAttentionHiddens(att_size, deep_att_hidden_size_per_abstr, similarity_attention=do_similarity))
 
         rnn_input_size = abstr_hidden_size * abstr_list_cnt * 2 + (opt['hidden_size'] * 2)
 
         self.att_final_size = rnn_input_size
         if not self.no_rnn:
-            self.rnn, self.output_size = RNN_from_opt(rnn_input_size, opt['hidden_size'], opt, num_layers=1, dialog_flow=dialog_flow)
-        #print('Deep attention x {}: Each with {} rays in {}-dim space'.format(abstr_list_cnt, deep_att_hidden_size_per_abstr, att_size))
-        #print('Deep attention RNN input {} -> output {}'.format(self.rnn_input_size, self.output_size))
+            self.rnn, self.output_size = RNN_from_opt(rnn_input_size, opt['hidden_size'], opt, num_layers=1,
+                                                      dialog_flow=dialog_flow)
+        # print('Deep attention x {}: Each with {} rays in {}-dim space'.format(abstr_list_cnt, deep_att_hidden_size_per_abstr, att_size))
+        # print('Deep attention RNN input {} -> output {}'.format(self.rnn_input_size, self.output_size))
 
         self.opt = opt
         self.do_self_attn = do_self_attn
 
-    def forward(self, x1_word, x1_abstr, x2_word, x2_abstr, x1_mask, x2_mask, return_bef_rnn=False, previous_hiddens=None):
+    def forward(self, x1_word, x1_abstr, x2_word, x2_abstr, x1_mask, x2_mask, return_bef_rnn=False,
+                previous_hiddens=None):
         """
         x1_word, x2_word, x1_abstr, x2_abstr are list of 3D tensors.
         3D tensor: batch_size * length * hidden_size
@@ -329,7 +347,8 @@ class DeepAttention(nn.Module):
 
         x2_list = x2_abstr
         for i in range(len(x2_list)):
-            attn_hiddens = self.int_attn_list[i](x1_att, x2_att, x2_mask, x3=x2_list[i], drop_diagonal=self.do_self_attn)
+            attn_hiddens = self.int_attn_list[i](x1_att, x2_att, x2_mask, x3=x2_list[i],
+                                                 drop_diagonal=self.do_self_attn)
             x1 = torch.cat((x1, attn_hiddens), 2)
 
         if not self.no_rnn:
@@ -341,11 +360,13 @@ class DeepAttention(nn.Module):
         else:
             return x1
 
+
 # For summarizing a set of vectors into a single vector
 class LinearSelfAttn(nn.Module):
     """Self attention over a sequence:
     * o_i = softmax(Wx_i) for x_i in X.
     """
+
     def __init__(self, input_size):
         super(LinearSelfAttn, self).__init__()
         self.linear = nn.Linear(input_size, 1)
@@ -363,11 +384,13 @@ class LinearSelfAttn(nn.Module):
         alpha = F.softmax(scores, dim=1)
         return alpha
 
+
 # For attending the span in document from the query
 class BilinearSeqAttn(nn.Module):
     """A bilinear attention layer over a sequence X w.r.t y:
     * o_i = x_i'Wy for x_i in X.
     """
+
     def __init__(self, x_size, y_size, opt, identity=False):
         super(BilinearSeqAttn, self).__init__()
         if not identity:
@@ -389,12 +412,13 @@ class BilinearSeqAttn(nn.Module):
         xWy.data.masked_fill_(x_mask.data, -float('inf'))
         return xWy
 
+
 class GetSpanStartEnd(nn.Module):
     # supports MLP attention and GRU for pointer network updating
     def __init__(self, x_size, h_size, opt, do_indep_attn=True, attn_type="Bilinear", do_ptr_update=True):
         super(GetSpanStartEnd, self).__init__()
 
-        self.attn  = BilinearSeqAttn(x_size, h_size, opt)
+        self.attn = BilinearSeqAttn(x_size, h_size, opt)
         self.attn2 = BilinearSeqAttn(x_size, h_size, opt) if do_indep_attn else None
 
         self.rnn = nn.GRUCell(x_size, h_size) if do_ptr_update else None
@@ -417,10 +441,11 @@ class GetSpanStartEnd(nn.Module):
         else:
             h1 = h0
 
-        end_scores = self.attn(x, h1, x_mask) if self.attn2 is None else\
-                     self.attn2(x, h1, x_mask)
+        end_scores = self.attn(x, h1, x_mask) if self.attn2 is None else \
+            self.attn2(x, h1, x_mask)
         # end_scores = batch * len
         return st_scores, end_scores
+
 
 class BilinearLayer(nn.Module):
     def __init__(self, x_size, y_size, class_num):
@@ -439,14 +464,15 @@ class BilinearLayer(nn.Module):
         Wy = self.linear(y)
         Wy = Wy.view(Wy.size(0), self.class_num, x.size(1))
         xWy = torch.sum(x.unsqueeze(1).expand_as(Wy) * Wy, dim=2)
-        return xWy.squeeze(-1) # size = batch * class_num
+        return xWy.squeeze(-1)  # size = batch * class_num
+
 
 # ------------------------------------------------------------------------------
 # Functional
 # ------------------------------------------------------------------------------
 
 # by default in PyTorch, +-*/ are all element-wise
-def uniform_weights(x, x_mask): # used in lego_reader.py
+def uniform_weights(x, x_mask):  # used in lego_reader.py
     """Return uniform weights over non-masked input."""
     alpha = Variable(torch.ones(x.size(0), x.size(1)))
     if x.data.is_cuda:
@@ -455,10 +481,11 @@ def uniform_weights(x, x_mask): # used in lego_reader.py
     alpha = alpha / alpha.sum(1).expand(alpha.size())
     return alpha
 
+
 # bmm: batch matrix multiplication
 # unsqueeze: add singleton dimension
 # squeeze: remove singleton dimension
-def weighted_avg(x, weights): # used in lego_reader.py
+def weighted_avg(x, weights):  # used in lego_reader.py
     """ x = batch * len * d
         weights = batch * len
     """

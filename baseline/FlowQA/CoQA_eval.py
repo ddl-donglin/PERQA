@@ -14,10 +14,11 @@ OPTS = None
 
 out_domain = ["reddit", "science"]
 in_domain = ["mctest", "gutenberg", "race", "cnn", "wikipedia"]
-domain_mappings = {"mctest":"children_stories", "gutenberg":"literature", "race":"mid-high_school", "cnn":"news", "wikipedia":"wikipedia", "science":"science", "reddit":"reddit"}
+domain_mappings = {"mctest": "children_stories", "gutenberg": "literature", "race": "mid-high_school", "cnn": "news",
+                   "wikipedia": "wikipedia", "science": "science", "reddit": "reddit"}
 
 
-class CoQAEvaluator():
+class CoQAEvaluator:
 
     def __init__(self, gold_file):
         self.gold_data, self.gold_list, self.id_to_source = CoQAEvaluator.gold_answers_to_dict(gold_file)
@@ -123,8 +124,8 @@ class CoQAEvaluator():
 
     def compute_turn_score_seq(self, preds):
         ''' Added by Hsin-Yuan Huang for sequential evaluation. '''
-        assert(len(self.gold_list) == len(preds))
-        
+        assert (len(self.gold_list) == len(preds))
+
         score = 0
         for i in range(len(preds)):
             score += CoQAEvaluator._compute_turn_score(self.gold_list[i], preds[i])['f1']
@@ -232,6 +233,7 @@ class CoQAEvaluator():
 
         return scores
 
+
 def parse_args():
     parser = argparse.ArgumentParser('Official evaluation script for CoQA.')
     parser.add_argument('--data-file', dest="data_file", help='Input data JSON file.')
@@ -245,6 +247,7 @@ def parse_args():
         sys.exit(1)
     return parser.parse_args()
 
+
 def main():
     evaluator = CoQAEvaluator(OPTS.data_file)
 
@@ -255,6 +258,7 @@ def main():
         with open(OPTS.pred_file) as f:
             pred_data = CoQAEvaluator.preds_to_dict(OPTS.pred_file)
         print(json.dumps(evaluator.model_performance(pred_data), indent=2))
+
 
 if __name__ == '__main__':
     OPTS = parse_args()
