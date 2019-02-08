@@ -58,6 +58,8 @@ If you want to extract your own proposal data, you could find more details from 
 
 Due to lack of support for Chinese in [basic projects](https://github.com/maciejkula/glove-python), we adopted [LTP](https://github.com/HIT-SCIR/ltp), [LTP_py](https://github.com/HIT-SCIR/pyltp)
 
+LTP can be download from [Google_Drive](https://drive.google.com/open?id=1_eBscwUpr6eZPU5749H_lPikcR7FfDrB)
+
 
 #### CoVE
 
