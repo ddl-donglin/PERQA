@@ -49,7 +49,7 @@ def gen_all_instances(json_path=root_path + 'zh_session_ano.json', feature_type=
         all_num = len(json_data[each_name])
         idx = 0
         # perqa_ins_list = []
-        each_name_perqa_ins_f = open(each_name + '.pkl', 'wb+')
+        each_name_perqa_ins_f = open(root_path + each_name + '.pkl', 'wb+')
 
         for each_case in json_data[each_name]:
             session = each_case['session']
@@ -87,29 +87,66 @@ def gen_all_instances(json_path=root_path + 'zh_session_ano.json', feature_type=
 
             # perqa_ins_list.append(perqa_ins)
             pickle.dump(perqa_ins, each_name_perqa_ins_f)
+        each_name_perqa_ins_f.close()
 
         # with open(each_name + '.pkl', 'wb+') as perqa_f:
         #     pickle.dump(perqa_ins_list, perqa_f)
 
 
-def load_instances(ins_path):
+def load_instances(ins_path, get_ins_num=-1):
+    """
+
+    :param ins_path:
+    :param get_ins_num: -1 means get all instances list
+    :return:
+    """
+    instances_list = []
     with open(ins_path, 'rb') as load_f:
-        # print("Loading instances list...")
-        return pickle.load(load_f)
+        print("Loading instances list..." + ins_path)
+        if get_ins_num == -1:
+            # get all instances
+            while True:
+                try:
+                    instances_list.append(pickle.load(load_f))
+                except EOFError:
+                    print('The pkl file ' + ins_path + ' ends.')
+                    break
+        else:
+            while get_ins_num > 0:
+                try:
+                    instances_list.append(pickle.load(load_f))
+                    get_ins_num -= 1
+
+                except EOFError:
+                    print('The pkl file ' + ins_path + ' ends.')
+                    break
+    return instances_list
 
 
 if __name__ == '__main__':
     # gen_all_instances(json_path=root_path + 'test.json')
-    # for each_ins in load_instances('xfduan.pkl'):
-    #     print(each_ins.name)
-    #     print(each_ins.session)
-    #     print(each_ins.raw_id)
-    #     print("session_f: ")
-    #     for each_f in each_ins.session_f:
-    #         print(len(each_f))
-    #     print("qas_f: ")
-    #     for each_f in each_ins.qas_f:
-    #         print(each_f[0], len(each_f))
+
+    show_ins_num = 8
+    for each_ins in load_instances(root_path + 'xfduan.pkl', show_ins_num):
+        if show_ins_num > 0:
+            print(each_ins.name)
+            print(each_ins.session)
+            print(each_ins.raw_id)
+            print("session_f: ")
+            for each_f in each_ins.session_f:
+                print(len(each_f))
+            print("qas_f: ")
+            for each_f in each_ins.qas_f:
+                print(each_f[0], len(each_f))
+
+            show_ins_num -= 1
+        else:
+            break
+
+    # ins_list = load_instances(root_path + 'test01.pkl', 2)
+    # for each_ins in ins_list:
+    #     print(each_ins)
+    # print(len(ins_list))
 
     """
     xfduan
@@ -141,4 +178,4 @@ if __name__ == '__main__':
     6 3
     """
 
-    gen_all_instances()
+    # gen_all_instances()
