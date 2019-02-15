@@ -7,14 +7,19 @@
 |Modified projects|[flowQA_4_PERQA](https://github.com/Daviddddl/FlowQA)|[coQA_4_PERQA](https://github.com/Daviddddl/FlowQA/blob/master/QA_model/model_CoQA.py)|[QuAC_4_PERQA](https://github.com/Daviddddl/FlowQA/blob/master/QA_model/model_QuAC.py)|[DrQA_4_PERQA](https://github.com/Daviddddl/DrQA)|
 |---|---|---|---|---|
 
+
+<!--
+
 ### Data
 
 Download the PERQA dataset: [PERQA](https://drive.google.com/open?id=1_KP3YOeCrpwuV8Qecq2RXyBvPkwso-7-)
 
+-->
+
 
 ### Environment
 
-Tensorflow1.8 + CUDA9.0 + python3.6 + Tensor2tensor
+Tensorflow1.12 + CUDA9.0 + python3.6 + Tensor2tensor
 
   
 Download and install [Anaconda](https://www.anaconda.com/download/#linux) 
@@ -46,10 +51,14 @@ source activate tensorflow
 pip install -r requirements.txt
 python prepare.py
 ```
+
+<!--
+
 ##### Download extracted bert features of [PERQA](https://drive.google.com/open?id=1_KP3YOeCrpwuV8Qecq2RXyBvPkwso-7-)
 |[PERQA_p1](https://drive.google.com/open?id=1yP0mbo2DI7X-CujPpAJ_TWnxM6niOqBY)|[PERQA_p2](https://drive.google.com/open?id=1vWHyzxIZm5lYtg4iThpTsqoJ4498NhxY)|
 |---|---|
 
+-->
 
 #### GloVe
 You could find our modified glove for Chinese. [glove-tools](https://github.com/Daviddddl/glove-tools)
