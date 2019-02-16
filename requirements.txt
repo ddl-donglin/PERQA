@@ -4,9 +4,6 @@ h5py
 Pillow
 cmake
 numpy
-opencv-python
-torch>=0.4.0
-moviepy
 requests
 cython
 cffi
@@ -26,3 +23,5 @@ nltk
 dlib
 git+https://github.com/cocodataset/cocoapi.git#subdirectory=PythonAPI
 sklearn
+spacy
+pandas
