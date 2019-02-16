@@ -1,4 +1,14 @@
 class PERQAInstance:
+    """
+    xfduan:     736
+    dldi:       804
+    lmzhang:    802
+    zyzhao:     920
+    zqzhu:      804
+    chzhu:      702
+    jwhu:       729
+    xichen:     706
+    """
 
     def __init__(self, name, session, raw_id, session_f, qas_f):
         self.name = name

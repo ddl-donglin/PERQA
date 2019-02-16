@@ -2,8 +2,21 @@ import json
 import pickle
 import PERQAInstance
 from bert.extract_features import my_get_features
+import numpy
 
 root_path = '/home/david/PycharmProjects/PERQA/data/'
+name_list = ['xfduan', 'dldi', 'lmzhang', 'zyzhao', 'zqzhu', 'chzhu', 'jwhu', 'xichen']
+"""
+    xfduan:     736
+    dldi:       804
+    lmzhang:    802
+    zyzhao:     920
+    zqzhu:      804
+    chzhu:      702
+    jwhu:       729
+    xichen:     706
+    all:        6203
+"""
 
 
 def gen_bert_features(input_str):
@@ -95,6 +108,8 @@ def gen_all_instances(json_path=root_path + 'zh_session_ano.json', feature_type=
 
 def load_instances(ins_path, get_ins_num=-1):
     """
+    root_path + name_list + '.pkl'
+    root_path + train.pkl / dev.pkl / test.pkl
 
     :param ins_path:
     :param get_ins_num: -1 means get all instances list
@@ -123,34 +138,100 @@ def load_instances(ins_path, get_ins_num=-1):
     return instances_list
 
 
+def split_dataset(dataset_path=root_path):
+    """
+    generate train, dev and test instances lists
+    :param dataset_path:
+    :return:
+    """
+    # train_list = []
+    # dev_list = []
+    # test_list = []
+    train_num = 0
+    dev_num = 0
+    test_num = 0
+
+    f = open(dataset_path + 'zh_session_ano.json', 'r')
+    json_data = json.loads(f.read())
+    # all_ins_num = 0
+    # for each_name in json_data:
+    #     all_ins_num += len(json_data[each_name])
+    # print(all_ins_num)    # all: 6203
+
+    all_ins_list = []
+    for each_name in json_data:
+        for each_ins in json_data[each_name]:
+            all_ins_list.append((each_name, each_ins['raw_id']))
+
+    # print(all_ins_list[3])      # ('xfduan', 6)
+    all_ins_num = len(all_ins_list)
+    # print(all_ins_num)    # 6203
+
+    numpy.random.shuffle(all_ins_list)
+    train, dev, test = all_ins_list[: int(all_ins_num * 0.8)], \
+                       all_ins_list[int(all_ins_num * 0.8): int(all_ins_num * 0.9)], \
+                       all_ins_list[int(all_ins_num * 0.9):]
+
+    # print(len(train), len(dev), len(test))  # 4962 620 621
+
+    train_f = open(root_path + 'train.pkl', 'wb+')
+    dev_f = open(root_path + 'dev.pkl', 'wb+')
+    test_f = open(root_path + 'test.pkl', 'wb+')
+
+    for each_name in name_list:
+        for each_ins in load_instances(root_path + each_name + '.pkl'):
+            if (each_ins.name, each_ins.raw_id) in train:
+                # train_list.append(each_ins)
+                train_num += 1
+                pickle.dump(each_ins, train_f)
+            elif (each_ins.name, each_ins.raw_id) in dev:
+                # dev_list.append(each_ins)
+                dev_num += 1
+                pickle.dump(each_ins, train_f)
+            elif (each_ins.name, each_ins.raw_id) in test:
+                # test_list.append(each_ins)
+                test_num += 1
+                pickle.dump(each_ins, train_f)
+            else:
+                print(str((each_ins.name, each_ins.raw_id)) + ' is wrong !?????')
+
+    train_f.close()
+    test_f.close()
+    dev_f.close()
+    # print(train_num, dev_num, test_num)     # 4962 620 621
+    # print(len(train_list))
+    # print(len(dev_list))
+    # print(len(test_list))
+
+
 if __name__ == '__main__':
-    # gen_all_instances(json_path=root_path + 'test.json')
+    # visualization
 
-    show_ins_num = 8
-    for each_ins in load_instances(root_path + 'xfduan.pkl', show_ins_num):
-        if show_ins_num > 0:
-            print(each_ins.name)
-            print(each_ins.session)
-            print(each_ins.raw_id)
-            print("session_f: ")
-            for each_f in each_ins.session_f:
-                print(len(each_f))
-            print("qas_f: ")
-            for each_f in each_ins.qas_f:
-                print(each_f[0], len(each_f))
-
-            show_ins_num -= 1
-        else:
-            break
-
-    # ins_list = load_instances(root_path + 'test01.pkl', 2)
-    # for each_ins in ins_list:
-    #     print(each_ins)
-    # print(len(ins_list))
+    # show_ins_num = 2
+    # for each_ins in load_instances(root_path + 'xfduan.pkl', show_ins_num):
+    #     if show_ins_num > 0:
+    #         print(each_ins.name)
+    #         print(each_ins.session)
+    #         print(each_ins.raw_id)
+    #         print("session_f: ")
+    #         for each_f in each_ins.session_f:
+    #             print(len(each_f))
+    #         print("qas_f: ")
+    #         for each_f in each_ins.qas_f:
+    #             print(each_f[0], len(each_f))
+    #
+    #         show_ins_num -= 1
+    #     else:
+    #         break
 
     """
     xfduan
-    ['总觉得自己去菜场买菜很有画面感啊！', '啊…上次心血来潮去卖暖贴 卖的好惨好惨啊 lz咋卖？', '啊？我咋卖？我不卖东西诶 我是去买东西哦', '那 你买东西的时候有木有挎着框', '哈哈哈哈 没有诶', '那就太没画面感了…']
+    ['总觉得自己去菜场买菜很有画面感啊！', 
+     '啊…上次心血来潮去卖暖贴 卖的好惨好惨啊 lz咋卖？', 
+     '啊？我咋卖？我不卖东西诶 我是去买东西哦',
+     '那 你买东西的时候有木有挎着框', 
+     '哈哈哈哈 没有诶', 
+     '那就太没画面感了…']
     1
     session_f: 
     58368
@@ -179,3 +260,5 @@ if __name__ == '__main__':
     """
 
     # gen_all_instances()
+
+    split_dataset()
