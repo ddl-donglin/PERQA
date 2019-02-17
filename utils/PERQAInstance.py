@@ -19,3 +19,6 @@ class PERQAInstance:
 
     def __repr__(self):
         return "PERQA Instance: name=" + str(self.name) + ", id=" + str(self.raw_id)
+
+    def get_qa_id(self):
+        return self.name + '_' + str(self.raw_id)

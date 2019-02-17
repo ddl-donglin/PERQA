@@ -174,24 +174,27 @@ def split_dataset(dataset_path=root_path):
 
     # print(len(train), len(dev), len(test))  # 4962 620 621
 
-    train_f = open(root_path + 'train.pkl', 'wb+')
-    dev_f = open(root_path + 'dev.pkl', 'wb+')
-    test_f = open(root_path + 'test.pkl', 'wb+')
+    train_f = open(root_path + 'train_list.txt', 'w+')
+    dev_f = open(root_path + 'dev_list.txt', 'w+')
+    test_f = open(root_path + 'test_list.txt', 'w+')
 
     for each_name in name_list:
         for each_ins in load_instances(root_path + each_name + '.pkl'):
             if (each_ins.name, each_ins.raw_id) in train:
                 # train_list.append(each_ins)
                 train_num += 1
-                pickle.dump(each_ins, train_f)
+                # pickle.dump(each_ins, train_f)
+                train_f.write(each_ins.get_qa_id() + '\n')
             elif (each_ins.name, each_ins.raw_id) in dev:
                 # dev_list.append(each_ins)
                 dev_num += 1
-                pickle.dump(each_ins, train_f)
+                # pickle.dump(each_ins, train_f)
+                dev_f.write(each_ins.get_qa_id() + '\n')
             elif (each_ins.name, each_ins.raw_id) in test:
                 # test_list.append(each_ins)
                 test_num += 1
-                pickle.dump(each_ins, train_f)
+                # pickle.dump(each_ins, train_f)
+                test_f.write(each_ins.get_qa_id() + '\n')
             else:
                 print(str((each_ins.name, each_ins.raw_id)) + ' is wrong !?????')
 
