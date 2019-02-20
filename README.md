@@ -168,6 +168,8 @@ gpu1 coqa_perq0:
 ```
 result:
 ```shell
+    Train:  F1 = 4.599,
+    Test:   F1 = 4.605
 ```
 
 ### Environment
