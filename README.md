@@ -9,7 +9,6 @@
 |Modified projects|[flowQA_4_PERQA](https://github.com/Daviddddl/FlowQA)|[coQA_4_PERQA](https://github.com/Daviddddl/FlowQA/blob/master/QA_model/model_CoQA.py)|[QuAC_4_PERQA](https://github.com/Daviddddl/FlowQA/blob/master/QA_model/model_QuAC.py)|[DrQA_4_PERQA](https://github.com/Daviddddl/DrQA)|
 |---|---|---|---|---|
 
-
 <!--
 
 ### Data
@@ -18,6 +17,158 @@ Download the PERQA dataset: [PERQA](https://drive.google.com/open?id=1_KP3YOeCrp
 
 -->
 
+#### QuAC
+parameters:
+```shell
+gpu5 quac_perq0:
+    CoVe_opt=1, 
+    MTLSTM_path='glove/MT-LSTM.pth', 
+    answer_type_num=1, 
+    batch_size=3, 
+    concat_rnn=False, 
+    cuda=True, 
+    deep_att_hidden_size_per_abstr=250, 
+    deep_inter_att_do_similar=0, 
+    dev_dir='QuAC_data/', 
+    do_hierarchical_query=True, 
+    do_not_save=False, 
+    do_prealign=True, 
+    do_ptr_update=True, 
+    do_residual=False, 
+    do_residual_everything=False, 
+    do_residual_rnn=False, 
+    do_seq_dropout=True, 
+    dropout_emb=0.4, 
+    elmo_batch_size=12, 
+    elmo_lambda=0.0, 
+    epoches=30, 
+    eval_per_epoch=1, 
+    explicit_dialog_ctx=2, 
+    final_output_att_hidden=250, 
+    fix_embeddings=False, 
+    grad_clipping=10, 
+    hidden_size=125, 
+    learning_rate=0.1, 
+    log_file='output.log', 
+    log_per_updates=20, 
+    max_len=35, 
+    model_dir='models', 
+    momentum=0, 
+    my_dropout_p=0.4, 
+    name='', 
+    ner_dim=8, 
+    ner_size=19, 
+    no_dialog_flow=False, 
+    no_em=False, 
+    optimizer='adamax', 
+    pos_dim=12, 
+    pos_size=51, 
+    prealign_hidden=300, 
+    prealign_option=2, 
+    pretrain='', 
+    ptr_net_attn_type='Bilinear', 
+    ptr_net_indep_attn=True, 
+    question_merge='linear_self_attn', 
+    question_normalize=True, 
+    reduce_lr=0.0, 
+    resume='', 
+    resume_options=False, 
+    rnn_layers=1, 
+    rnn_type='lstm', 
+    save_best_only=True, 
+    save_for_predict=False, 
+    seed=1023, 
+    self_attention_opt=1, 
+    task_name='QuAC', 
+    train_dir='QuAC_data/', 
+    tune_partial=400, 
+    use_dialog_act=False, 
+    use_elmo=True, 
+    use_ner=True, 
+    use_pos=True, 
+    use_wemb=True, 
+    weight_decay=0
+```
+result:
+```shell
+    Train:  F1 = 3.298,     NA = 100.000,   TH = -18.768
+    Test:   F1 = 3.30,      HEQ_Q=2.74,     HEQ_D = 0.81
+```
+
+#### CoQA
+parameters:
+```shell
+gpu1 coqa_perq0:
+    CoVe_opt=1, 
+    MTLSTM_path='glove/MT-LSTM.pth', 
+    answer_type_num=4, 
+    batch_size=1, 
+    concat_rnn=False, 
+    cuda=True, 
+    deep_att_hidden_size_per_abstr=250, 
+    deep_inter_att_do_similar=0, 
+    dev_dir='CoQA/', 
+    do_hierarchical_query=True, 
+    do_not_save=False, 
+    do_prealign=True, 
+    do_ptr_update=True, 
+    do_residual=False, 
+    do_residual_everything=False, 
+    do_residual_rnn=False, 
+    do_seq_dropout=True, dropout_emb=0.4, 
+    elmo_batch_size=12, 
+    elmo_lambda=0.0,
+    epoches=30, 
+    eval_per_epoch=1, 
+    explicit_dialog_ctx=1, 
+    final_output_att_hidden=250, 
+    fix_embeddings=False, 
+    grad_clipping=10, 
+    hidden_size=125, 
+    learning_rate=0.1, 
+    log_file='output.log', 
+    log_per_updates=20, 
+    max_len=15, 
+    model_dir='models', 
+    momentum=0, 
+    my_dropout_p=0.4, 
+    name='', 
+    ner_dim=8, 
+    ner_size=19, 
+    no_dialog_flow=False, 
+    no_em=False, 
+    optimizer='adamax', 
+    pos_dim=12, 
+    pos_size=51, 
+    prealign_hidden=300, 
+    prealign_option=2, 
+    pretrain='', 
+    ptr_net_attn_type='Bilinear', 
+    ptr_net_indep_attn=True, 
+    question_merge='linear_self_attn', 
+    question_normalize=True, 
+    rationale_lambda=0.0, 
+    reduce_lr=0.0, 
+    resume='', 
+    resume_options=False, 
+    rnn_layers=1, 
+    rnn_type='lstm', 
+    save_best_only=True, 
+    save_for_predict=False, 
+    seed=1023, 
+    self_attention_opt=1, 
+    task_name='CoQA', 
+    train_dir='CoQA/', 
+    tune_partial=400, 
+    use_elmo=True, 
+    use_ner=True, 
+    use_pos=True, 
+    use_wemb=True, 
+    weight_decay=0
+```
+result:
+```shell
+```
 
 ### Environment
 
