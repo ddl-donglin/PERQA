@@ -3,6 +3,10 @@
 ## A Conversational Question Answering on Phrase Ellipsis Recovery
 
 ### Baseline
+If you want to train your own data, please follow the 
+[glove](https://github.com/Daviddddl/glove-tools.git) and [spacy](https://github.com/Daviddddl/spacy-zh.git), 
+and generate your own features.
+
 |Base projects|[flowQA](https://github.com/momohuang/FlowQA)|[coQA](https://github.com/stanfordnlp/coqa-baselines)|[DrQA](https://github.com/facebookresearch/DrQA)|[QuAC](http://quac.ai/) (dataset)|
 |---|---|---|---|---|
 

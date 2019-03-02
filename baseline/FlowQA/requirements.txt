@@ -1,6 +1,0 @@
-numpy
-pandas
-msgpack-python
-spacy
-allennlp
-torch

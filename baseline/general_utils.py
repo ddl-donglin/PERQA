@@ -1,19 +1,11 @@
-import re
-import os
-import sys
-import random
-import string
-import logging
-import argparse
-import unicodedata
-from shutil import copyfile
-from datetime import datetime
-from collections import Counter
-import torch
-import msgpack
 import json
+import re
+import string
+import unicodedata
+from collections import Counter
+
 import numpy as np
-import pandas as pd
+import torch
 from allennlp.modules.elmo import batch_to_ids
 
 
@@ -41,7 +33,7 @@ def len_preserved_normalize_answer(s):
 
 
 def split_with_span(s):
-    if s.split() == []:
+    if not s.split():
         return [], []
     else:
         return zip(*[(m.group(0), (m.start(), m.end() - 1)) for m in re.finditer(r'\S+', s)])
@@ -57,7 +49,7 @@ def free_text_to_span(free_text, full_text):
 
     free_ls = len_preserved_normalize_answer(free_text).split()
     full_ls, full_span = split_with_span(len_preserved_normalize_answer(full_text))
-    if full_ls == []:
+    if not full_ls:
         return full_text, 0, len(full_text)
 
     max_f1, best_index = 0.0, (0, len(full_ls) - 1)
@@ -173,7 +165,7 @@ def get_context_span(context, context_token):
 
 def find_answer_span(context_span, answer_start, answer_end):
     if answer_start == -1 and answer_end == -1:
-        return (-1, -1)
+        return -1, -1
 
     t_start, t_end = 0, 0
     for token_id, (s, t) in enumerate(context_span):
@@ -184,9 +176,9 @@ def find_answer_span(context_span, answer_start, answer_end):
 
     if t_start == -1 or t_end == -1:
         print(context_span, answer_start, answer_end)
-        return (None, None)
+        return None, None
     else:
-        return (t_start, t_end)
+        return t_start, t_end
 
 
 def build_embedding(embed_file, targ_vocab, wv_dim):
@@ -216,11 +208,11 @@ def token2id(docs, vocab, unk_id=None):
 
 class BatchGen_CoQA:
     def __init__(self, data, batch_size, gpu, dialog_ctx=0, evaluation=False, context_maxlen=100000, precompute_elmo=0):
-        '''
+        """
         input:
             data - see train.py
             batch_size - int
-        '''
+        """
         self.dialog_ctx = dialog_ctx
         self.batch_size = batch_size
         self.context_maxlen = context_maxlen
@@ -403,11 +395,11 @@ class BatchGen_CoQA:
 class BatchGen_QuAC:
     def __init__(self, data, batch_size, gpu, dialog_ctx=0, use_dialog_act=False, evaluation=False,
                  context_maxlen=100000, precompute_elmo=0):
-        '''
+        """
         input:
             data - see train.py
             batch_size - int
-        '''
+        """
         self.dialog_ctx = dialog_ctx
         self.use_dialog_act = use_dialog_act
         self.batch_size = batch_size
