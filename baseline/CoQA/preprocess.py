@@ -6,13 +6,15 @@ import random
 import numpy as np
 import spacy
 from baseline.general_utils import load_glove_vocab
+from baseline.glove import Glove
+from baseline.glove import Corpus
 
 
 def main():
     parser = argparse.ArgumentParser(
         description='Preprocessing train + dev files, about 15 minutes to run on Servers.'
     )
-    parser.add_argument('--wv_file', default='../glove/glove.840B.300d.txt',
+    parser.add_argument('--wv_file', default='../glove/glove.model',
                         help='path to word vector file.')
     parser.add_argument('--wv_dim', type=int, default=300,
                         help='word vector dimension.')
@@ -42,7 +44,10 @@ def main():
 
     log.info('start data preparing... (using {} threads)'.format(args.threads))
 
+    print('Loading pre-trained GloVe model')
     glove_vocab = load_glove_vocab(wv_file, wv_dim)  # return a "set" of vocabulary
+    glove = Glove.load(wv_file)
+    print(glove)
     log.info('glove loaded.')
 
 
